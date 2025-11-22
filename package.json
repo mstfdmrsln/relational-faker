@@ -1,0 +1,69 @@
+{
+  "name": "relational-faker",
+  "version": "1.0.0",
+  "description": "Deterministic, topologically sorted relational mock data generator.",
+  "author": "Mustafa Demiraslan <mstfdmrsln0668@gmail.com>",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "demo": "tsx examples/demo.ts",
+    "lint": "tsc --noEmit",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage",
+    "prepublishOnly": "npm run test && npm run build"
+  },
+  "keywords": [
+    "mock",
+    "data",
+    "faker",
+    "relational",
+    "database",
+    "seeding",
+    "testing",
+    "graph",
+    "typescript",
+    "sort"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@vitest/ui": "4.0.13",
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@faker-js/faker": "^8.0.0",
+    "@vitest/coverage-v8": "^4.0.13",
+    "vitest": "^4.0.13"
+  },
+  "peerDependencies": {
+    "@faker-js/faker": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mstfdmrsln/relational-faker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mstfdmrsln/relational-faker/issues"
+  },
+  "homepage": "https://github.com/mstfdmrsln/relational-faker#readme"
+}
