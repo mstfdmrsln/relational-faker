@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/mstfdmrsln/relational-faker/compare/v1.2.0...v1.3.0) (2025-11-23)
+
+
+### Features
+
+* add crossJoin for unique many-to-many relations ([50be913](https://github.com/mstfdmrsln/relational-faker/commit/50be913106a74cd65dd599bcf46be0cc09043b8d))
+
 # [1.2.0](https://github.com/mstfdmrsln/relational-faker/compare/v1.1.0...v1.2.0) (2025-11-23)
 
 
