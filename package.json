@@ -22,7 +22,8 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
-    "prepublishOnly": "npm run test && npm run build"
+    "prepublishOnly": "npm run test && npm run build",
+    "commit": "cz"
   },
   "keywords": [
     "mock",
@@ -41,10 +42,17 @@
     "README.md",
     "LICENSE"
   ],
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@vitest/ui": "4.0.13",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
     "semantic-release": "^25.0.2",
     "tsup": "^8.0.0",
     "tsx": "^4.0.0",
