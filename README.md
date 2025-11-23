@@ -22,7 +22,6 @@
       <img src="https://img.shields.io/bundlephobia/minzip/relational-faker?style=flat-square&color=green" alt="bundle size" />
     </a>
   </p>
-
 </div>
 
 ---
