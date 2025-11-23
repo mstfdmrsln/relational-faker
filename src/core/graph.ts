@@ -1,6 +1,6 @@
 /**
  * Dependency Graph Manager.
- * Handles topological sorting and circular dependency detection.
+ * Handles topological sorting to determine the correct table generation order.
  */
 export class DependencyGraph {
   private adjList: Map<string, Set<string>> = new Map();
@@ -20,17 +20,17 @@ export class DependencyGraph {
   }
 
   /**
-   * Resolves the execution order using Topological Sort (DFS).
-   * @throws Error if a circular dependency is detected.
+   * Resolves execution order using DFS.
+   * Throws an error if a circular dependency (A -> B -> A) is detected.
    */
   resolveOrder(): string[] {
     const visited = new Set<string>();
-    const tempVisited = new Set<string>(); // Stack for cycle detection
+    const tempVisited = new Set<string>(); 
     const order: string[] = [];
 
     const visit = (node: string) => {
       if (tempVisited.has(node)) {
-        throw new Error(`[RelationalFaker] CRITICAL: Circular dependency detected involving '${node}'.`);
+        throw new Error(`[RelationalFaker] Circular dependency detected involving '${node}'.`);
       }
       if (visited.has(node)) return;
 

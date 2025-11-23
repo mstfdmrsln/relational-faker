@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker';
-import { FieldDescriptor, DatabaseContext } from './types';
+import { FieldDescriptor, GeneratorContext } from './types';
 
 export const f = {
-  // --- Scalar Generators ---
+  // --- Scalars ---
   
   uuid: (): FieldDescriptor<string> => ({
     type: 'scalar',
@@ -28,40 +28,76 @@ export const f = {
     generate: () => faker.datatype.boolean(),
   }),
   
-  /**
-   * Allows providing a custom generation function.
-   */
-  custom: <T>(fn: () => T): FieldDescriptor<T> => ({
+  custom: <T>(fn: (ctx: GeneratorContext) => T): FieldDescriptor<T> => ({
     type: 'scalar',
     dependencies: [],
-    generate: () => fn(),
+    generate: (ctx) => fn(ctx),
   }),
 
-  // --- Relational Generators ---
+  // --- Relational & Smart Generators ---
 
   /**
-   * Creates a foreign key reference to another table.
-   * @param tableName The name of the target table.
-   * @param field The field to select from the target record (default: 'id').
+   * Creates a relation to another table or the same table (self-reference).
    */
   relation: (tableName: string, field: string = 'id'): FieldDescriptor<any> => ({
     type: 'relation',
-    dependencies: [tableName], 
-    generate: (ctx: DatabaseContext) => {
-      const targetData = ctx[tableName];
+    dependencies: [tableName],
+    generate: ({ db, store }) => {
+      let targetData: any[] = [];
+
+      // Check if we are referencing the table currently being generated (Self-Reference)
+      const isSelfReference = !db[tableName]; 
       
-      if (!targetData || targetData.length === 0) {
-        throw new Error(`[RelationalFaker] Integrity Error: Table '${tableName}' is empty. Order resolution failed.`);
+      if (isSelfReference) {
+        targetData = store;
+        // If it's the first row, there are no parents to pick from yet.
+        if (targetData.length === 0) return null; 
+      } else {
+        targetData = db[tableName];
       }
 
-      // Performance Note: Can be optimized with O(1) lookup tables for large datasets.
-      const randomRecord = faker.helpers.arrayElement(targetData);
-      
-      if (!(field in randomRecord)) {
-         throw new Error(`[RelationalFaker] Schema Error: Field '${field}' does not exist in table '${tableName}'.`);
+      if (!targetData || targetData.length === 0) {
+        if (!isSelfReference) {
+             throw new Error(`[RelationalFaker] Error: Table '${tableName}' is empty.`);
+        }
+        return null;
       }
-      
+
+      const randomRecord = faker.helpers.arrayElement(targetData);
+
+      // --- FIX: Validation Check Added Back ---
+      // We must ensure the referenced field actually exists in the target record.
+      if (!(field in randomRecord)) {
+        throw new Error(`[RelationalFaker] Schema Error: Field '${field}' does not exist in table '${tableName}'.`);
+      }
+      // ----------------------------------------
+
       return randomRecord[field];
     },
   }),
+
+  /**
+   * Date generators with context awareness.
+   */
+  date: {
+    past: (): FieldDescriptor<Date> => ({
+        type: 'scalar', dependencies: [],
+        generate: () => faker.date.past()
+    }),
+    
+    /**
+     * Generates a date relative to another field in the same row.
+     * Useful for ensuring 'updatedAt' > 'createdAt'.
+     */
+    soon: (days: number, refField?: string): FieldDescriptor<Date> => ({
+        type: 'scalar', dependencies: [],
+        generate: ({ row }) => {
+            let refDate = new Date();
+            if (refField && row[refField]) {
+                refDate = new Date(row[refField]);
+            }
+            return faker.date.soon({ days, refDate });
+        }
+    })
+  }
 };

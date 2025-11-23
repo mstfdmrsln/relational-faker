@@ -29,6 +29,7 @@ describe('DependencyGraph (Topological Sort)', () => {
 
   it('should resolve diamond dependencies correctly', () => {
     // Structure: A -> B, A -> C, then (B & C) -> D
+    // This ensures parallel branches are handled correctly before merging
     graph.addDependency('B', 'A');
     graph.addDependency('C', 'A');
     graph.addDependency('D', 'B');

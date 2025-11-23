@@ -1,3 +1,3 @@
 export { RelationalFaker } from './core/engine';
 export { f } from './core/generators';
-export type { FakerConfig } from './core/types';
+export type { FakerConfig, DatabaseContext } from './core/types';

@@ -1,6 +1,6 @@
 {
   "name": "relational-faker",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Deterministic, topologically sorted relational mock data generator.",
   "author": "Mustafa Demiraslan <mstfdmrsln0668@gmail.com>",
   "license": "MIT",

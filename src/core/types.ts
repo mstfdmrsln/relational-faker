@@ -1,34 +1,32 @@
 /**
- * Represents the current state of the generated database holding all tables and rows.
- * Example: { 'users': [{...}], 'posts': [{...}] }
+ * Represents the current state of all fully generated tables.
  */
 export type DatabaseContext = Record<string, any[]>;
 
 /**
- * Describes how a specific field is generated and its dependencies.
+ * Context passed to every generator function.
+ * Contains the global DB, the current batch being generated, and the current row being mutated.
  */
-export interface FieldDescriptor<T = any> {
-  type: 'scalar' | 'relation';
-  /** List of table names this field depends on. */
-  dependencies: string[];
-  /** Function to generate the field value based on the current context. */
-  generate: (ctx: DatabaseContext) => T;
+export interface GeneratorContext {
+  db: DatabaseContext;       
+  store: any[];             
+  row: Record<string, any>;  
 }
 
 /**
- * Defines the schema for a single table, mapping field names to generators.
+ * Describes how a field is generated.
  */
+export interface FieldDescriptor<T = any> {
+  type: 'scalar' | 'relation';
+  dependencies: string[];
+  generate: (ctx: GeneratorContext) => T;
+}
+
 export type SchemaDefinition = Record<string, FieldDescriptor>;
 
-/**
- * Configuration for a single table including row count and schema.
- */
 export interface TableConfig {
   count: number;
   schema: SchemaDefinition;
 }
 
-/**
- * The main configuration object mapping table names to their settings.
- */
 export type FakerConfig = Record<string, TableConfig>;

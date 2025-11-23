@@ -12,17 +12,10 @@ export class RelationalFaker {
     this.buildExecutionPlan();
   }
 
-  /**
-   * Sets the random seed for deterministic data generation.
-   * @param value The seed number.
-   */
   public seed(value: number) {
     faker.seed(value);
   }
 
-  /**
-   * Scans the schema configuration and constructs the dependency graph.
-   */
   private buildExecutionPlan() {
     Object.keys(this.config).forEach((tableName) => {
       this.graph.addNode(tableName);
@@ -30,8 +23,9 @@ export class RelationalFaker {
 
       Object.values(schema).forEach((descriptor) => {
         descriptor.dependencies.forEach((dep) => {
-          // Exclude self-references to prevent false circular dependency errors
-          if (dep !== tableName) {
+          // Ignore self-references in the dependency graph to prevent circular errors.
+          // Self-referencing logic is handled during the generation phase.
+          if (dep !== tableName) { 
             this.graph.addDependency(tableName, dep);
           }
         });
@@ -39,35 +33,34 @@ export class RelationalFaker {
     });
   }
 
-  /**
-   * Resolves the topological execution order and hydrates the database.
-   * @returns The generated relational data.
-   */
   public generate(): DatabaseContext {
     const executionOrder = this.graph.resolveOrder();
     const db: DatabaseContext = {};
 
-    // Debug: console.log(`[RelationalFaker] Execution Order: ${executionOrder.join(' -> ')}`);
-
     for (const tableName of executionOrder) {
-      // Skip nodes that exist in the graph but are missing in the config
       if (!this.config[tableName]) continue;
 
       const { count, schema } = this.config[tableName];
-      const rows = [];
+      const tableRows: any[] = []; 
 
       for (let i = 0; i < count; i++) {
         const row: Record<string, any> = {};
         
+        // Construct the context with access to previous tables, current batch, and current row.
+        const context = {
+          db,           
+          store: tableRows, 
+          row: row       
+        };
+
         for (const [fieldName, descriptor] of Object.entries(schema)) {
-          // Pass the current database context to the generator function
-          row[fieldName] = descriptor.generate(db);
+          row[fieldName] = descriptor.generate(context);
         }
         
-        rows.push(row);
+        tableRows.push(row);
       }
 
-      db[tableName] = rows;
+      db[tableName] = tableRows;
     }
 
     return db;
