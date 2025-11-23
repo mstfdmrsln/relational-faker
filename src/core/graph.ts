@@ -20,17 +20,17 @@ export class DependencyGraph {
   }
 
   /**
-   * Resolves execution order using DFS.
-   * Throws an error if a circular dependency (A -> B -> A) is detected.
+   * Resolves execution order using Depth First Search (DFS).
+   * @throws Error if a circular dependency is detected.
    */
   resolveOrder(): string[] {
     const visited = new Set<string>();
-    const tempVisited = new Set<string>(); 
+    const tempVisited = new Set<string>(); // Stack for cycle detection
     const order: string[] = [];
 
     const visit = (node: string) => {
       if (tempVisited.has(node)) {
-        throw new Error(`[RelationalFaker] Circular dependency detected involving '${node}'.`);
+        throw new Error(`[RelationalFaker] CRITICAL: Circular dependency detected involving '${node}'.`);
       }
       if (visited.has(node)) return;
 

@@ -1,14 +1,11 @@
 import { DatabaseContext } from '../core/types';
 
-/**
- * Handles CSV escaping (wrapping strings with commas in quotes).
- */
 function escapeCSV(value: any): string {
   if (value === null || value === undefined) return '';
   
   const stringValue = String(value);
   
-  // If value contains comma, newline or quote, wrap in quotes and escape internal quotes
+  // Wrap in quotes if it contains comma, newline or double quote
   if (/[",\n]/.test(stringValue)) {
     return `"${stringValue.replace(/"/g, '""')}"`;
   }
