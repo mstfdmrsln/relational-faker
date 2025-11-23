@@ -12,10 +12,16 @@ export class RelationalFaker {
     this.buildExecutionPlan();
   }
 
+  /**
+   * Sets the random seed for deterministic data generation.
+   */
   public seed(value: number) {
     faker.seed(value);
   }
 
+  /**
+   * Scans the schema configuration and constructs the dependency graph.
+   */
   private buildExecutionPlan() {
     Object.keys(this.config).forEach((tableName) => {
       this.graph.addNode(tableName);
@@ -23,8 +29,8 @@ export class RelationalFaker {
 
       Object.values(schema).forEach((descriptor) => {
         descriptor.dependencies.forEach((dep) => {
-          // Ignore self-references in the dependency graph to prevent circular errors.
-          // Self-referencing logic is handled during the generation phase.
+          // Exclude self-references from the graph to prevent circular dependency errors.
+          // Self-references are handled logically during the generation phase.
           if (dep !== tableName) { 
             this.graph.addDependency(tableName, dep);
           }
@@ -33,6 +39,9 @@ export class RelationalFaker {
     });
   }
 
+  /**
+   * Resolves the topological execution order and hydrates the database.
+   */
   public generate(): DatabaseContext {
     const executionOrder = this.graph.resolveOrder();
     const db: DatabaseContext = {};
@@ -46,7 +55,7 @@ export class RelationalFaker {
       for (let i = 0; i < count; i++) {
         const row: Record<string, any> = {};
         
-        // Construct the context with access to previous tables, current batch, and current row.
+        // Context includes the global DB, current table store, and the current row being mutated.
         const context = {
           db,           
           store: tableRows, 

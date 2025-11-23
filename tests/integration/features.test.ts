@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { RelationalFaker } from '../../src/core/engine';
-import { f } from '../../src/core/generators';
+import { f, crossJoin } from '../../src/core/generators';
 
-describe('RelationalFaker v1.1 Features', () => {
+describe('RelationalFaker Features', () => {
+
+  // --- v1.1 Features ---
 
   describe('Self-Referencing Relations (Recursive)', () => {
     it('should handle self-referencing tables without circular dependency errors', () => {
@@ -131,6 +133,61 @@ describe('RelationalFaker v1.1 Features', () => {
           expect(postIds.has(post.parentPostId)).toBe(true);
         }
       });
+    });
+  });
+
+  // --- v1.3 Features ---
+
+  describe('Many-to-Many Relations (CrossJoin)', () => {
+    it('should generate unique pairs using crossJoin', () => {
+      // Setup a cross join generator between students and courses
+      const enrollmentJoin = crossJoin('students', 'courses');
+
+      const db = new RelationalFaker({
+        students: { count: 3, schema: { id: f.uuid() } },
+        courses: { count: 3, schema: { id: f.uuid() } },
+        
+        enrollments: {
+          count: 5,
+          schema: {
+            id: f.uuid(),
+            // Use the synchronized generators
+            studentId: enrollmentJoin.left,
+            courseId: enrollmentJoin.right,
+          }
+        }
+      });
+
+      const data = db.generate();
+
+      expect(data.enrollments).toHaveLength(5);
+
+      // Verify uniqueness of pairs
+      const pairs = new Set();
+      data.enrollments.forEach((e: any) => {
+        const pair = `${e.studentId}-${e.courseId}`;
+        pairs.add(pair);
+      });
+
+      // If all 5 rows are unique, Set size must be 5
+      expect(pairs.size).toBe(5);
+    });
+
+    it('should throw error if unique pairs are exhausted', () => {
+      const join = crossJoin('a', 'b');
+      
+      const db = new RelationalFaker({
+        a: { count: 1, schema: { id: f.uuid() } },
+        b: { count: 1, schema: { id: f.uuid() } },
+        // Max possible unique combinations: 1 * 1 = 1 pair.
+        // We are requesting 2 rows, which is impossible without duplicates.
+        joinTable: {
+          count: 2,
+          schema: { aid: join.left, bid: join.right }
+        }
+      });
+
+      expect(() => db.generate()).toThrowError(/Exhausted unique pairs/);
     });
   });
 });

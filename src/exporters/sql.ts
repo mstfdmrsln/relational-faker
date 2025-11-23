@@ -6,9 +6,6 @@ interface SQLExportOptions {
   dialect?: SQLDialect;
 }
 
-/**
- * Converts a JavaScript value to a SQL-safe string.
- */
 function formatValue(value: any): string {
   if (value === null || value === undefined) return 'NULL';
   
@@ -21,15 +18,14 @@ function formatValue(value: any): string {
   }
   
   if (value instanceof Date) {
-    return `'${value.toISOString()}'`; // ISO format is generally safe
+    return `'${value.toISOString()}'`;
   }
   
   if (typeof value === 'object') {
-    // JSON support for objects/arrays
     return `'${JSON.stringify(value).replace(/'/g, "''")}'`;
   }
 
-  // Escape single quotes for strings (Standard SQL escaping)
+  // Standard SQL single quote escaping
   return `'${String(value).replace(/'/g, "''")}'`;
 }
 
@@ -40,10 +36,9 @@ export function toSQL(data: DatabaseContext, options: SQLExportOptions = {}): st
   for (const [tableName, rows] of Object.entries(data)) {
     if (rows.length === 0) continue;
 
-    // Extract headers from the first row
     const columns = Object.keys(rows[0]);
     
-    // Dialect specific identifier quoting
+    // Identifier quoting: backtick for MySQL, double quote for Postgres/SQLite
     const q = dialect === 'mysql' ? '`' : '"'; 
     const columnStr = columns.map(c => `${q}${c}${q}`).join(', ');
 

@@ -36,8 +36,9 @@ Standard mocking libraries (like `faker.js`) are excellent for generating scalar
 ## ✨ Features
 
 - **🧠 Auto-Dependency Resolution:** Just define relations; the engine figures out the execution order.
-- **🔄 Recursive / Self-Referencing Relations:** Support for trees, nested comments, or organizational hierarchies (v1.1).
+- **🤝 Many-to-Many Support:** Generate unique, non-colliding pairs for join tables (v1.3).
 - **💾 Data Exporters:** Export generated data to SQL (INSERT statements) or CSV formats (v1.2).
+- **🔄 Recursive / Self-Referencing Relations:** Support for trees, nested comments, or organizational hierarchies (v1.1).
 - **🎯 Smart Constraints:** Define rules like "End Date must be after Start Date" (v1.1).
 - **🛡️ TypeScript First:** Fully typed definitions.
 - **⚛️ Deterministic Seeding:** Reproducible test runs.
@@ -101,6 +102,37 @@ console.log(data.tasks); // Dates are logically consistent
 
 -----
 
+## 🤝 Many-to-Many Relations (v1.3)
+
+Standard random selection can cause duplicate primary keys in join tables (e.g., assigning the same Student to the same Course twice).
+
+Use `crossJoin` to generate **unique pairs** automatically.
+
+```typescript
+import { RelationalFaker, f, crossJoin } from 'relational-faker';
+
+// 1. Create a cross-join generator for Students <-> Courses
+const enrollments = crossJoin('students', 'courses');
+
+const db = new RelationalFaker({
+  students: { count: 3, schema: { id: f.uuid() } },
+  courses: {  count: 3, schema: { id: f.uuid() } },
+  
+  // Join Table
+  student_courses: {
+    count: 5, // Must be <= (students.count * courses.count)
+    schema: {
+      // 2. Assign the unique pair generators
+      studentId: enrollments.left,
+      courseId: enrollments.right,
+      enrolledAt: f.date.past()
+    }
+  }
+});
+```
+
+-----
+
 ## 💾 Data Export (v1.2)
 
 You can export the generated data to SQL or CSV for seeding databases or external analysis.
@@ -131,6 +163,12 @@ console.log(csvFiles['users']);
 ### `f.relation(tableName, fieldName)`
 
 Creates a foreign key reference. Supports self-referencing (recursive) tables automatically. The engine guarantees that the referenced record exists.
+
+### `crossJoin(tableA, tableB, fieldA?, fieldB?)`
+
+Creates a synchronized pair of generators that yield unique combinations (Cartesian Product) of the two tables.
+
+  - Returns `{ left, right }` field descriptors.
 
 ### `f.date.soon(days, refField?)`
 

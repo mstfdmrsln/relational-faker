@@ -1,5 +1,6 @@
 /**
  * Represents the current state of all fully generated tables.
+ * Example: { users: [{ id: 1, ... }], posts: [...] }
  */
 export type DatabaseContext = Record<string, any[]>;
 
@@ -14,7 +15,7 @@ export interface GeneratorContext {
 }
 
 /**
- * Describes how a field is generated.
+ * Describes how a field is generated and tracks its dependencies.
  */
 export interface FieldDescriptor<T = any> {
   type: 'scalar' | 'relation';
