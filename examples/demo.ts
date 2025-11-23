@@ -1,4 +1,4 @@
-import { RelationalFaker, f } from '../src/index';
+import { RelationalFaker, f, Exporters } from '../src/index';
 
 // 1. Define the schema configuration
 const db = new RelationalFaker({
@@ -68,13 +68,34 @@ try {
     dates: `${p.createdAt.toISOString().split('T')[0]} -> ${p.updatedAt.toISOString().split('T')[0]}`
   })));
 
-    console.log("\n--- Comments ---");
-    console.table(data.comments.map(c => ({
-      id: c.id.split('-')[0] + '...',
-      postId: c.postId.split('-')[0] + '...',
-      userId: c.userId.split('-')[0] + '...',
-      text: c.text
-    })));
+  console.log("\n--- Comments ---");
+  console.table(data.comments.map(c => ({
+    id: c.id.split('-')[0] + '...',
+    postId: c.postId.split('-')[0] + '...',
+    userId: c.userId.split('-')[0] + '...',
+    text: c.text
+  })));
+
+  // ==========================================
+  // v1.2.0 Feature Showcase: EXPORTERS
+  // ==========================================
+
+  console.log("\n\n📦 [v1.2.0] EXPORT FEATURES DEMO");
+  console.log("==================================");
+
+  // A) SQL Export
+  // Generates valid INSERT statements for PostgreSQL (default), MySQL, etc.
+  console.log("\n--- 💾 SQL Export (Postgres Dialect) ---");
+  const sqlOutput = Exporters.toSQL(data, { dialect: 'postgres' });
+  console.log(sqlOutput); 
+  // You could write this to a file: fs.writeFileSync('seed.sql', sqlOutput);
+
+  // B) CSV Export
+  // Generates a dictionary of CSV strings: { users: "...", posts: "..." }
+  console.log("\n--- 📊 CSV Export (Users Table) ---");
+  const csvOutput = Exporters.toCSV(data);
+  console.log(csvOutput.users);
+  // You could write this to a file: fs.writeFileSync('users.csv', csvOutput.users);
 
 } catch (error) {
   console.error("❌ Generation Failed:", error);

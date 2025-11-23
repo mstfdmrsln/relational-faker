@@ -38,6 +38,7 @@ Standard mocking libraries (like `faker.js`) are excellent for generating scalar
 
 - **🧠 Auto-Dependency Resolution:** Just define relations; the engine figures out the execution order.
 - **🔄 Recursive / Self-Referencing Relations:** Support for trees, nested comments, or organizational hierarchies (v1.1).
+- **💾 Data Exporters:** Export generated data to SQL (INSERT statements) or CSV formats (v1.2).
 - **🎯 Smart Constraints:** Define rules like "End Date must be after Start Date" (v1.1).
 - **🛡️ TypeScript First:** Fully typed definitions.
 - **⚛️ Deterministic Seeding:** Reproducible test runs.
@@ -101,6 +102,31 @@ console.log(data.tasks); // Dates are logically consistent
 
 -----
 
+## 💾 Data Export (v1.2)
+
+You can export the generated data to SQL or CSV for seeding databases or external analysis.
+
+```typescript
+import { RelationalFaker, Exporters } from 'relational-faker';
+
+const db = new RelationalFaker({ /* config */ });
+const data = db.generate();
+
+// 1. SQL Export (PostgreSQL, MySQL, SQLite)
+// Generates valid INSERT statements handling dates, nulls, and escaping.
+const sql = Exporters.toSQL(data, { dialect: 'postgres' });
+console.log(sql);
+// Output: INSERT INTO "users" ("id", "name") VALUES ...
+
+// 2. CSV Export
+// Returns an object where keys are table names and values are CSV strings.
+const csvFiles = Exporters.toCSV(data);
+console.log(csvFiles['users']);
+// Output: id,name,email...
+```
+
+-----
+
 ## 📚 API Reference
 
 ### `f.relation(tableName, fieldName)`
@@ -122,12 +148,15 @@ Provides access to the generation context for complex logic.
   - `context.store`: The array of rows generated so far for the current table.
   - `context.db`: The complete database of previously generated tables.
 
-<!-- end list -->
+### `Exporters.toSQL(data, options?)`
 
-```typescript
-// Example: Calculate tax based on another field in the same row
-total: f.custom(({ row }) => row.price * 1.18)
-```
+Converts the generated data object into a SQL string.
+
+  - `options.dialect`: `'postgres'` (default), `'mysql'`, or `'sqlite'`.
+
+### `Exporters.toCSV(data)`
+
+Converts the generated data object into a record of CSV strings (`{ tableName: csvString }`).
 
 -----
 
